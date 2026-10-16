@@ -68,7 +68,7 @@ namespace sistema_web_de_rutas.Controllers
         {
             if (User.IsInRole("Administrador"))
             {
-                return RedirectToAction("Index", "Pedidos");
+                return RedirectToAction("Index", "Panel");
             }
 
             return View("PanelRepartidor");

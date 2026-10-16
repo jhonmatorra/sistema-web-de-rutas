@@ -1,0 +1,332 @@
+﻿@model sistema_web_de_rutas.Models.PanelAdministradorViewModel
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Panel del administrador";
+
+    var puntos = Model.ClientesMapa.Select(c => new
+    {
+        id = c.Id,
+        nombre = c.Nombre,
+        latitud = c.Latitud.GetValueOrDefault(),
+        longitud = c.Longitud.GetValueOrDefault()
+    }).ToList();
+}
+
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<style>
+    .panel-admin .card {
+        border-radius: 10px;
+        height: 100%;
+    }
+
+    .panel-admin .resumen strong {
+        display: block;
+        font-size: 30px;
+        margin-top: 8px;
+    }
+
+    .panel-admin .resumen a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .panel-admin #mapaGeneral {
+        width: 100%;
+        height: 430px;
+        border-radius: 8px;
+        background: #eef1ed;
+    }
+</style>
+
+<div class="panel-admin">
+
+    <div class="d-flex justify-content-between align-items-center
+        flex-wrap gap-3 mb-4">
+        <div>
+            <h1 class="mb-1">Panel del administrador</h1>
+            <p class="text-muted mb-0">
+                Panadería Familiar Matorra · Trinidad, Beni
+            </p>
+        </div>
+
+        <a asp-controller="Pedidos"
+           asp-action="Crear"
+           class="btn btn-primary">
+            Registrar pedido
+        </a>
+    </div>
+
+    <div class="row g-3 mb-4 resumen">
+        <div class="col-6 col-lg-3">
+            <div class="card">
+                <a asp-controller="Clientes" asp-action="Index"
+                   class="card-body">
+                    Clientes registrados
+                    <strong>@Model.TotalClientes</strong>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card">
+                <a asp-controller="Productos" asp-action="Index"
+                   class="card-body">
+                    Productos activos
+                    <strong>@Model.ProductosActivos</strong>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card">
+                <a asp-controller="Pedidos" asp-action="Index"
+                   class="card-body">
+                    Pedidos pendientes
+                    <strong>@Model.PedidosPendientes</strong>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card">
+                <a asp-controller="Repartidores" asp-action="Index"
+                   class="card-body">
+                    Repartidores registrados
+                    <strong>@Model.Repartidores.Count</strong>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between
+                        align-items-center flex-wrap gap-2 mb-2">
+                        <h2 class="h5 mb-0">Mapa de clientes</h2>
+
+                        <button id="verTodosClientes"
+                                type="button"
+                                class="btn btn-sm btn-outline-secondary">
+                            Ver todos los puntos
+                        </button>
+                    </div>
+
+                    <p class="text-muted small">
+                        Clientes activos con ubicación guardada.
+                        Pulsa un marcador para identificar al cliente.
+                    </p>
+
+                    <div id="mapaGeneral"></div>
+
+                    <p id="estadoMapa" class="small text-muted mt-2 mb-0">
+                        @Model.ClientesMapa.Count clientes en el mapa.
+                    </p>
+
+                    @if (Model.ClientesSinUbicacion > 0)
+                    {
+                        <p class="small mt-2 mb-0">
+                            Hay @Model.ClientesSinUbicacion clientes activos
+                            sin ubicación válida.
+                            <a asp-controller="Clientes" asp-action="Index">
+                                Revisar clientes
+                            </a>
+                        </p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h5">Gestión de distribución</h2>
+
+                    <div class="d-grid gap-2 mt-3">
+                        <a asp-controller="Clientes" asp-action="Index"
+                           class="btn btn-outline-primary">
+                            Gestionar clientes
+                        </a>
+
+                        <a asp-controller="Productos" asp-action="Index"
+                           class="btn btn-outline-primary">
+                            Gestionar productos
+                        </a>
+
+                        <a asp-controller="Pedidos" asp-action="Index"
+                           class="btn btn-outline-primary">
+                            Consultar pedidos y pagos
+                        </a>
+
+                        <a asp-controller="Repartidores" asp-action="Index"
+                           class="btn btn-outline-primary">
+                            Gestionar repartidores
+                        </a>
+                    </div>
+
+                    <hr />
+
+                    <h3 class="h6">Repartidores</h3>
+
+                    @if (Model.Repartidores.Count == 0)
+                    {
+                        <p class="text-muted">
+                            Todavía no hay repartidores registrados.
+                        </p>
+                    }
+                    else
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var repartidor in Model.Repartidores)
+                            {
+                                <li class="list-group-item px-0">
+                                    <strong>@repartidor.Nombre</strong>
+                                    <div class="small text-muted">
+                                        Capacidad habitual:
+                                        @repartidor.CapacidadCarga
+                                        unidades de carga
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between
+                align-items-center mb-3">
+                <h2 class="h5 mb-0">Últimos pedidos registrados</h2>
+
+                <a asp-controller="Pedidos" asp-action="Index">
+                    Ver todos
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Pedido</th>
+                            <th>Cliente</th>
+                            <th>Total Bs</th>
+                            <th>Entrega</th>
+                            <th>Pago</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var pedido in Model.UltimosPedidos)
+                        {
+                            <tr>
+                                <td>#@pedido.Id</td>
+                                <td>@pedido.Cliente.Nombre</td>
+                                <td>@pedido.Total.ToString("0.00")</td>
+                                <td>@pedido.Estado</td>
+                                <td>@pedido.EstadoPago</td>
+                                <td>
+                                    <a asp-controller="Pedidos"
+                                       asp-action="Detalle"
+                                       asp-route-id="@pedido.Id">
+                                        Abrir
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+
+                        @if (Model.UltimosPedidos.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="6" class="text-muted">
+                                    Todavía no hay pedidos registrados.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        (() => {
+            const estado = document.getElementById("estadoMapa");
+            const boton = document.getElementById("verTodosClientes");
+
+            if (typeof L === "undefined") {
+                estado.textContent =
+                    "No se pudo cargar el mapa. Los demás módulos siguen disponibles.";
+                boton.disabled = true;
+                return;
+            }
+
+            const clientes = @Html.Raw(JsonSerializer.Serialize(puntos));
+
+            const editarCliente =
+                        @Html.Raw(JsonSerializer.Serialize(
+                                Url.Action("Edit", "Clientes")));
+
+            const mapa = L.map("mapaGeneral")
+                .setView([-14.8333, -64.9000], 14);
+
+            L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+                    maxZoom: 19,
+                    attribution: "&copy; OpenStreetMap contributors"
+                }
+            ).addTo(mapa);
+
+            const grupo = L.featureGroup().addTo(mapa);
+
+            clientes.forEach(cliente => {
+                const contenido = document.createElement("div");
+
+                const nombre = document.createElement("strong");
+                nombre.textContent = cliente.nombre;
+                contenido.appendChild(nombre);
+
+                contenido.appendChild(document.createElement("br"));
+
+                const enlace = document.createElement("a");
+                enlace.textContent = "Abrir cliente";
+                enlace.href =
+                    editarCliente + "?id=" + encodeURIComponent(cliente.id);
+
+                contenido.appendChild(enlace);
+
+                L.marker([cliente.latitud, cliente.longitud])
+                    .bindPopup(contenido)
+                    .addTo(grupo);
+            });
+
+            function mostrarTodos() {
+                if (grupo.getLayers().length > 0) {
+                    mapa.fitBounds(grupo.getBounds(), {
+                        padding: [30, 30],
+                        maxZoom: 16
+                    });
+                }
+            }
+
+            mostrarTodos();
+            boton.addEventListener("click", mostrarTodos);
+
+            if (clientes.length === 0) {
+                estado.textContent =
+                    "Guarda la ubicación de un cliente para verlo aquí.";
+            }
+        })();
+    </script>
+}
