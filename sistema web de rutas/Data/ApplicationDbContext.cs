@@ -12,5 +12,6 @@ namespace sistema_web_de_rutas.Data
         }
 
         public DbSet<Cliente> Clientes { get; set; }
+        public DbSet<Producto> Productos { get; set; }
     }
 }

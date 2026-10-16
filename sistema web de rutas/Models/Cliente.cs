@@ -17,6 +17,7 @@ namespace sistema_web_de_rutas.Models
         [StringLength(240)]
         public string Direccion { get; set; } = "";
 
+        // TODO: Convertir Tipo en desplegable cuando se definan las categorías.
         [Required]
         public string Tipo { get; set; } = "Individual";
 
