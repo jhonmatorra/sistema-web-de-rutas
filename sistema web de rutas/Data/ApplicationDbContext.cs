@@ -1,9 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using sistema_web_de_rutas.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace sistema_web_de_rutas.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     {
         public ApplicationDbContext(
             DbContextOptions<ApplicationDbContext> options)

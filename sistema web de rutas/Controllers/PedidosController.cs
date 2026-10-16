@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using sistema_web_de_rutas.Data;
 using sistema_web_de_rutas.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace sistema_web_de_rutas.Controllers
 {
+    [Authorize(Roles = "Administrador")]
     public class PedidosController : Controller
     {
         private readonly ApplicationDbContext _context;

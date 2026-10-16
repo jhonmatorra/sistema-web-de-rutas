@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using sistema_web_de_rutas.Models;
 using sistema_web_de_rutas.Data;
+using Microsoft.AspNetCore.Authorization;
 
+[Authorize(Roles = "Administrador")]
 public class ProductosController : Controller
 {
     private readonly ApplicationDbContext _context;

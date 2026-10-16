@@ -9,6 +9,22 @@
     <link rel="stylesheet" href="~/sistema_web_de_rutas.styles.css" asp-append-version="true" />
 </head>
 <body>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="container py-2">
+            <span>Usuario: @User.Identity.Name</span>
+
+            <form asp-controller="Acceso"
+                  asp-action="Salir"
+                  method="post"
+                  class="d-inline ms-3">
+                <button type="submit"
+                        class="btn btn-sm btn-outline-secondary">
+                    Cerrar sesión
+                </button>
+            </form>
+        </div>
+    }
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
