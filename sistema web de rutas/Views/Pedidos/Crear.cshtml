@@ -1,0 +1,98 @@
+﻿@model sistema_web_de_rutas.Models.CrearPedidoViewModel
+
+@{
+    ViewData["Title"] = "Registrar pedido";
+}
+
+<h1>Registrar pedido</h1>
+
+<form asp-action="Crear" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="ClienteId" class="form-label">Cliente</label>
+        <select asp-for="ClienteId"
+                asp-items="Model.Clientes"
+                class="form-select">
+            <option value="">Selecciona un cliente</option>
+        </select>
+    </div>
+
+    <h2>Productos</h2>
+    <p>Escribe la cantidad. Deja 0 en los productos que no incluirás.</p>
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Precio unitario Bs</th>
+                    <th>Cantidad</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Lineas.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            @Model.Lineas[i].Nombre
+                            <input asp-for="Lineas[i].ProductoId"
+                                   type="hidden" />
+                        </td>
+                        <td>
+                            @Model.Lineas[i].PrecioReferencia.ToString("0.00")
+                        </td>
+                        <td>
+                            <input asp-for="Lineas[i].Cantidad"
+                                   class="form-control"
+                                   min="0"
+                                   max="10000"
+                                   aria-label="@($"Cantidad de {Model.Lineas[i].Nombre}")" />
+                            <span asp-validation-for="Lineas[i].Cantidad"
+                                  class="text-danger"></span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="EstadoPago" class="form-label">
+            Estado de pago
+        </label>
+        <select asp-for="EstadoPago" class="form-select">
+            <option value="Pendiente">Pendiente</option>
+            <option value="Pagado">Pagado</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="MetodoPago" class="form-label">
+            Método de pago
+        </label>
+        <select asp-for="MetodoPago" class="form-select">
+            <option value="Efectivo">Efectivo</option>
+            <option value="QR">QR</option>
+            <option value="Transferencia">Transferencia</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Observaciones" class="form-label"></label>
+        <textarea asp-for="Observaciones"
+                  class="form-control"
+                  maxlength="500"></textarea>
+    </div>
+
+    <p>El total se calcula al guardar con los precios del catálogo.</p>
+
+    <button type="submit" class="btn btn-primary">
+        Guardar pedido
+    </button>
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

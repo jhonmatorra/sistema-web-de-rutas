@@ -1,0 +1,49 @@
+﻿@model IEnumerable<sistema_web_de_rutas.Models.Pedido>
+
+@{
+    ViewData["Title"] = "Pedidos";
+}
+
+<h1>Pedidos</h1>
+
+<p>
+    <a asp-action="Crear" class="btn btn-primary">
+        Registrar pedido
+    </a>
+</p>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Número</th>
+                <th>Cliente</th>
+                <th>Fecha Bolivia</th>
+                <th>Total Bs</th>
+                <th>Entrega</th>
+                <th>Pago</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var pedido in Model)
+            {
+                <tr>
+                    <td>@pedido.Id</td>
+                    <td>@pedido.Cliente.Nombre</td>
+                    <td>
+                        @pedido.Fecha.AddHours(-4).ToString("dd/MM/yyyy HH:mm")
+                    </td>
+                    <td>@pedido.Total.ToString("0.00")</td>
+                    <td>@pedido.Estado</td>
+                    <td>@pedido.EstadoPago</td>
+                    <td>
+                        <a asp-action="Detalle" asp-route-id="@pedido.Id">
+                            Ver detalle
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
