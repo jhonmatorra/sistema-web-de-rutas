@@ -35,6 +35,21 @@ namespace sistema_web_de_rutas.Data
                 .WithMany()
                 .HasForeignKey(d => d.ProductoId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Repartidor>()
+                .HasOne(r => r.Usuario)
+                .WithMany()
+                .HasForeignKey(r => r.UsuarioId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Repartidor>()
+                .HasIndex(r => r.UsuarioId)
+                .IsUnique();
+
+
         }
+        public DbSet<Repartidor> Repartidores { get; set; }
     }
 }

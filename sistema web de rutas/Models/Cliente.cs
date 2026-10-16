@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
+using sistema_web_de_rutas.ModelBinders;
 
 namespace sistema_web_de_rutas.Models
 {
@@ -21,10 +23,14 @@ namespace sistema_web_de_rutas.Models
         [Required]
         public string Tipo { get; set; } = "Individual";
 
-        [Range(-90, 90)]
+        [ModelBinder(BinderType = typeof(CoordenadaModelBinder))]
+        [Range(-90.0, 90.0,
+             ErrorMessage = "La latitud debe estar entre -90 y 90.")]
         public double? Latitud { get; set; }
 
-        [Range(-180, 180)]
+        [ModelBinder(BinderType = typeof(CoordenadaModelBinder))]
+        [Range(-180.0, 180.0,
+            ErrorMessage = "La longitud debe estar entre -180 y 180.")]
         public double? Longitud { get; set; }
 
         public bool Activo { get; set; } = true;

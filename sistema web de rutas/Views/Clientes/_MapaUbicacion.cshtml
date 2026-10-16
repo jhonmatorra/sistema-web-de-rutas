@@ -1,0 +1,196 @@
+﻿@model sistema_web_de_rutas.Models.Cliente
+@using System.Text.Json
+
+@{
+    var latitud = Model?.Latitud;
+    var longitud = Model?.Longitud;
+
+    double[]? puntoInicial = latitud.HasValue && longitud.HasValue
+        ? new[] { latitud.Value, longitud.Value }
+        : null;
+}
+
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<div class="mb-3">
+    <label for="coordenadasCliente" class="form-label">
+        Coordenadas del cliente
+    </label>
+
+    <input id="coordenadasCliente"
+           type="text"
+           class="form-control"
+           placeholder="Ejemplo: -14.825811, -64.896237"
+           autocomplete="off" />
+
+    <div class="form-text">
+        Pega los dos números copiados de Google Maps:
+        primero latitud y después longitud, separados por coma.
+        Conserva los signos negativos.
+    </div>
+
+    <button id="mostrarCoordenadas"
+            type="button"
+            class="btn btn-outline-primary mt-2">
+        Mostrar en el mapa
+    </button>
+</div>
+
+<div id="mapaCliente"
+     style="height: 400px; width: 100%; border-radius: 8px;">
+</div>
+
+<p id="mensajeMapa" class="mt-2" role="status"></p>
+
+<input asp-for="Latitud" type="hidden" data-val="false" />
+<input asp-for="Longitud" type="hidden" data-val="false" />
+
+<span asp-validation-for="Latitud" class="text-danger"></span>
+<span asp-validation-for="Longitud" class="text-danger"></span>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    (() => {
+        const entrada = document.getElementById("coordenadasCliente");
+        const latitud = document.getElementById("Latitud");
+        const longitud = document.getElementById("Longitud");
+        const mensaje = document.getElementById("mensajeMapa");
+        const boton = document.getElementById("mostrarCoordenadas");
+        const formulario = entrada.closest("form");
+
+        const inicial =
+                @Html.Raw(JsonSerializer.Serialize(puntoInicial));
+
+        let mapa = null;
+        let marcador = null;
+
+        function leerCoordenadas(texto) {
+            const coincidencia = texto.trim().match(
+                /^([+-]?\d+(?:\.\d+)?)\s*,\s*([+-]?\d+(?:\.\d+)?)$/
+            );
+
+            if (!coincidencia) return null;
+
+            const punto = [
+                Number(coincidencia[1]),
+                Number(coincidencia[2])
+            ];
+
+            if (!punto.every(Number.isFinite) ||
+                Math.abs(punto[0]) > 90 ||
+                Math.abs(punto[1]) > 180) {
+                return null;
+            }
+
+            return punto;
+        }
+
+        function seleccionarPunto(punto, centrar) {
+            // Se envían con punto decimal, sin separador de miles.
+            latitud.value = String(punto[0]);
+            longitud.value = String(punto[1]);
+
+            entrada.value = punto[0] + ", " + punto[1];
+
+            if (mapa) {
+                if (!marcador) {
+                    marcador = L.marker(punto, {
+                        draggable: true
+                    }).addTo(mapa);
+
+                    marcador.on("dragend", () => {
+                        const p = marcador.getLatLng();
+                        seleccionarPunto([p.lat, p.lng], false);
+                    });
+                } else {
+                    marcador.setLatLng(punto);
+                }
+
+                if (centrar) mapa.setView(punto, 17);
+            }
+
+            mensaje.className = "mt-2 text-muted";
+            mensaje.textContent = mapa
+                ? "Comprueba el marcador y guarda el cliente."
+                : "Coordenadas preparadas. El mapa no está disponible.";
+        }
+
+        function aplicarEntrada(centrar) {
+            if (!entrada.value.trim()) {
+                latitud.value = "";
+                longitud.value = "";
+
+                if (marcador && mapa) {
+                    mapa.removeLayer(marcador);
+                    marcador = null;
+                }
+
+                mensaje.className = "mt-2 text-muted";
+                mensaje.textContent = "El cliente quedará sin ubicación.";
+                return true;
+            }
+
+            const punto = leerCoordenadas(entrada.value);
+
+            if (!punto) {
+                mensaje.className = "mt-2 text-danger";
+                mensaje.textContent =
+                    "Formato incorrecto. Usa, por ejemplo: " +
+                    "-14.825811, -64.896237. " +
+                    "Los decimales llevan punto y la coma separa los dos números.";
+                return false;
+            }
+
+            seleccionarPunto(punto, centrar);
+            return true;
+        }
+
+        const inicialValido = Array.isArray(inicial) &&
+            inicial.every(Number.isFinite) &&
+            Math.abs(inicial[0]) <= 90 &&
+            Math.abs(inicial[1]) <= 180;
+
+        if (typeof L !== "undefined") {
+            mapa = L.map("mapaCliente").setView(
+                inicialValido ? inicial : [-14.8333, -64.9000],
+                14
+            );
+
+            L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+                    maxZoom: 19,
+                    attribution: "&copy; OpenStreetMap contributors"
+                }
+            ).addTo(mapa);
+
+            mapa.on("click", evento => {
+                seleccionarPunto([
+                    evento.latlng.lat,
+                    evento.latlng.lng
+                ], false);
+            });
+        }
+
+        if (inicialValido) {
+            seleccionarPunto(inicial, false);
+        } else {
+            mensaje.textContent =
+                "Pega coordenadas o selecciona el punto en el mapa.";
+        }
+
+        boton.addEventListener("click", () => aplicarEntrada(true));
+
+        entrada.addEventListener("change", () => aplicarEntrada(true));
+
+        formulario.addEventListener("submit", evento => {
+            // También procesa las coordenadas si se guarda directamente.
+            if (!aplicarEntrada(false)) {
+                evento.preventDefault();
+                entrada.focus();
+            }
+        });
+    })();
+</script>

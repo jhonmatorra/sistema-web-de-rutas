@@ -1,0 +1,78 @@
+﻿@model sistema_web_de_rutas.Models.CrearRepartidorViewModel
+
+@{
+    ViewData["Title"] = "Registrar repartidor";
+}
+
+<h1>Registrar repartidor</h1>
+
+<form asp-action="Crear" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Nombre" class="form-label"></label>
+        <input asp-for="Nombre" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Usuario" class="form-label"></label>
+        <input asp-for="Usuario"
+               class="form-control"
+               autocomplete="off" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Clave" class="form-label">
+            Contraseña
+        </label>
+        <input asp-for="Clave"
+               type="password"
+               class="form-control"
+               autocomplete="new-password" />
+        <small>
+            Usa al menos 10 caracteres, mayúscula, minúscula,
+            número y símbolo.
+        </small>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ConfirmarClave" class="form-label">
+            Confirmar contraseña
+        </label>
+        <input asp-for="ConfirmarClave"
+               type="password"
+               class="form-control"
+               autocomplete="new-password" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CapacidadCarga" class="form-label">
+            Capacidad de carga
+        </label>
+        <input asp-for="CapacidadCarga"
+               class="form-control"
+               min="1"
+               max="100000" />
+        <small>
+            Se expresa en la misma escala de carga por pieza
+            utilizada en los productos.
+        </small>
+    </div>
+
+    <div class="form-check mb-3">
+        <input asp-for="Disponible" class="form-check-input" />
+        <label asp-for="Disponible" class="form-check-label">
+            Disponible para recibir nuevas rutas
+        </label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Registrar repartidor
+    </button>
+
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -71,9 +71,7 @@ namespace sistema_web_de_rutas.Controllers
                 return RedirectToAction("Index", "Pedidos");
             }
 
-            // Lo sustituiremos por la pantalla de rutas del repartidor.
-            return Content(
-                "Sesión iniciada. El panel del repartidor está pendiente.");
+            return View("PanelRepartidor");
         }
 
         [HttpPost]
